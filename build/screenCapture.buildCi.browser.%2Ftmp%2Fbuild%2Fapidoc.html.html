@@ -1,0 +1,281 @@
+<html><head></head><body><div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a href="https://github.com/samcday/node-google-spreadsheets">google-spreadsheets (v0.5.1)</a>
+</h1>
+<h4>Google Spreadsheet Data API for Node.js</h4>
+<div class="apidocSectionDiv"><a href="#apidoc.tableOfContents" id="apidoc.tableOfContents"><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.google-spreadsheets">module google-spreadsheets</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.google-spreadsheets.google-spreadsheets">
+            function <span class="apidocSignatureSpan"></span>google-spreadsheets
+            <span class="apidocSignatureSpan">(opts, cb)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.google-spreadsheets.cells">
+            function <span class="apidocSignatureSpan">google-spreadsheets.</span>cells
+            <span class="apidocSignatureSpan">(opts, cb)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.google-spreadsheets.rows">
+            function <span class="apidocSignatureSpan">google-spreadsheets.</span>rows
+            <span class="apidocSignatureSpan">(opts, cb)</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.google-spreadsheets" id="apidoc.module.google-spreadsheets">module google-spreadsheets</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.google-spreadsheets.google-spreadsheets" id="apidoc.element.google-spreadsheets.google-spreadsheets">
+        function <span class="apidocSignatureSpan"></span>google-spreadsheets
+        <span class="apidocSignatureSpan">(opts, cb)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">google-spreadsheets = function (opts, cb) {
+  if(!opts) {
+    throw new Error("Invalid arguments.");
+  }
+  if(!opts.key) {
+    throw new Error("Spreadsheet key not provided.");
+  }
+
+  getFeed(["worksheets", opts.key], opts.auth, null, function(err, data) {
+    if(err) {
+      return cb(err);
+    }
+
+    var spreadSheet = null;
+    try {
+        spreadSheet = new Spreadsheet(opts.key, opts.auth, data);
+    } catch (ex) {
+        cb(ex, null);
+        return;
+    }
+    cb(null, spreadSheet);
+  });
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.google-spreadsheets.cells" id="apidoc.element.google-spreadsheets.cells">
+        function <span class="apidocSignatureSpan">google-spreadsheets.</span>cells
+        <span class="apidocSignatureSpan">(opts, cb)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">cells = function (opts, cb) {
+  if(!opts) {
+    throw new Error("Invalid arguments.");
+  }
+  if(!opts.key) {
+    throw new Error("Spreadsheet key not provided.");
+  }
+  if(!opts.worksheet) {
+    throw new Error("Worksheet not specified.");
+  }
+
+  var query = {
+  };
+  if(opts.range) {
+    query.range = opts.range;
+  }
+  if (opts.maxRow) {
+    query["max-row"] = opts.maxRow;
+  }
+  if (opts.minRow) {
+    query["min-row"] = opts.minRow;
+  }
+  if (opts.maxCol) {
+    query["max-col"] = opts.maxCol;
+  }
+  if (opts.minCol) {
+    query["min-col"] = opts.minCol;
+  }
+
+  getFeed(["cells", opts.key, opts.worksheet], opts.auth, query, function(err, data) {
+    if(err) {
+      return cb(err);
+    }
+
+    if(typeof data.entry !== "undefined" &amp;&amp; data.entry !== null) {
+      return cb(null, new Cells(data));
+    } else {
+      return cb(null, { cells: {} }); // Not entirely happy about defining the data format in 2 places (here and in Cells()), but
+ the alternative is moving this check for undefined into that constructor, which means it's in a different place than the one for
+ .rows() above -- and that mismatch is what led to it being missed
+    }
+  });
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+	refresh_token: REFRESH_TOKEN
+});
+
+GoogleSpreadsheets({
+	key: '&lt;spreadsheet key&gt;',
+	auth: oauth2Client
+}, function(err, spreadsheet) {
+	spreadsheet.worksheets[0].<span class="apidocCodeKeywordSpan">cells</span>({
+		range: 'R1C1:R5C5'
+	}, function(err, cells) {
+		// Cells will contain a 2 dimensional array with all cell data in the
+		// range requested.
+	});
+});
+```
+...</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.google-spreadsheets.rows" id="apidoc.element.google-spreadsheets.rows">
+        function <span class="apidocSignatureSpan">google-spreadsheets.</span>rows
+        <span class="apidocSignatureSpan">(opts, cb)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">rows = function (opts, cb) {
+  if(!opts) {
+    throw new Error("Invalid arguments.");
+  }
+  if(!opts.key) {
+    throw new Error("Spreadsheet key not provided.");
+  }
+  if(!opts.worksheet) {
+    throw new Error("Worksheet not specified.");
+  }
+
+  var query = {};
+  if(opts.start) {
+    query["start-index"] = opts.start;
+  }
+  if(opts.num) {
+    query["max-results"] = opts.num;
+  }
+  if(opts.orderby) {
+    query.orderby = opts.orderby;
+  }
+  if(opts.reverse) {
+    query.reverse = opts.reverse;
+  }
+  if(opts.sq) {
+    query.sq = opts.sq;
+  }
+
+  getFeed(["list", opts.key, opts.worksheet], opts.auth, query, function(err, data) {
+    if(err) {
+      return cb(err);
+    }
+
+    var rows = [];
+
+    if(typeof data.entry !== "undefined" &amp;&amp; data.entry !== null) {
+      var entries = forceArray(data.entry);
+
+      entries.forEach(function(entry) {
+        rows.push(new Row(entry));
+      });
+    }
+
+    cb(null, rows);
+  });
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+Loads a `Spreadsheet` from the API. `opts` may contain the following:
+
+* `key`: *(required)* spreadsheet key
+* `auth`: *(optional)* authentication key from Google ClientLogin
+
+
+### GoogleSpreadsheets.<span class="apidocCodeKeywordSpan">rows</span>(opts, callback)
+
+Loads a set of rows for a specific Spreadsheet from the API. Note that this call is direct, you must supply all auth, spreadsheet
+ and worksheet information.
+
+`opts`:
+* `key`: *(required)* spreadsheet key
+* `worksheet`: *(required)* worksheet id. Can be a numeric index (starting from 1), or the proper string identifier for a worksheet
+.
+* `start`: *(optional)* starting index for returned results
+...</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
+</body></html>
